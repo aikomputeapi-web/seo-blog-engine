@@ -1,0 +1,89 @@
+[
+  {
+    "key": "bg-remover",
+    "created": "2026-10-08T04:11:45+00:00",
+    "competitors": [
+      {
+        "domain": "www.remove.bg",
+        "sample_url": "https://www.remove.bg/"
+      },
+      {
+        "domain": "www.photoroom.com",
+        "sample_url": "https://www.photoroom.com/tools/background-remover"
+      },
+      {
+        "domain": "www.pixelcut.ai",
+        "sample_url": "https://www.pixelcut.ai/background-remover"
+      },
+      {
+        "domain": "www.cutout.pro",
+        "sample_url": "https://www.cutout.pro/"
+      },
+      {
+        "domain": "pixian.ai",
+        "sample_url": "https://pixian.ai/"
+      },
+      {
+        "domain": "www.img2go.com",
+        "sample_url": "https://www.img2go.com/remove-background"
+      }
+    ],
+    "articles": {
+      "product-photo-visual-editing-tutorials": {
+        "title": "Product Photo Visual Editing Tutorials",
+        "source": {
+          "topic": "product photo visual editing tutorials",
+          "domains": [
+            "www.photoroom.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T04:47:25+00:00"
+      },
+      "marketplace-image-compliance-enterprise-catalog-guide": {
+        "title": "Marketplace Image Compliance: Enterprise Catalog Guide",
+        "source": {
+          "topic": "marketplace image compliance enterprise catalogs",
+          "domains": [
+            "www.photoroom.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T04:49:23+00:00"
+      },
+      "car-photography-dealerships-costs-workflow": {
+        "title": "Car Photography for Dealerships: Costs & Workflow",
+        "source": {
+          "topic": "car photography dealerships costs workflow",
+          "domains": [
+            "www.photoroom.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T05:00:34+00:00"
+      },
+      "image-generator-text-image-creator": {
+        "title": "Image Generator and Text Image Creator: A Practical Guide",
+        "source": {
+          "topic": "image generator text image creator",
+          "domains": [
+            "www.pixelcut.ai"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T05:02:06+00:00"
+      }
+    },
+    "name": "FreeBG",
+    "tool_url": "https://bg-remover-site.pages.dev",
+    "repo": "C:\\Users\\Administrator\\coding\\bg-remover-site",
+    "output_dir": "src/content/blog",
+    "description": "Free private in-browser background remover: drop a photo, get a transparent PNG in seconds, AI runs on-device, no signup or watermark.",
+    "keywords": [
+      "remove background from image",
+      "background remover",
+      "transparent png",
+      "remove bg free"
+    ]
+  }
+]
