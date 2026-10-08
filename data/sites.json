@@ -72,6 +72,28 @@
           "coverage": 1
         },
         "published": "2026-10-08T05:02:06+00:00"
+      },
+      "background-generator-instant-backgrounds-online": {
+        "title": "Background Generator: Instant Backgrounds Online",
+        "source": {
+          "topic": "background generator instant backgrounds",
+          "domains": [
+            "www.pixelcut.ai"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T05:33:25+00:00"
+      },
+      "automate-visual-workflows-faster-creation": {
+        "title": "Automate Visual Workflows for Faster Creation",
+        "source": {
+          "topic": "automating visual workflows for faster creation",
+          "domains": [
+            "www.photoroom.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T05:34:39+00:00"
       }
     },
     "name": "FreeBG",

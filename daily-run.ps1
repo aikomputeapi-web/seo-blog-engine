@@ -20,18 +20,28 @@ if (Test-Path $stateFile) {
 Set-Location "C:\Users\Administrator\coding\seo-blog-engine"
 python -m engine.cli run *>> $log
 
-# 2. deploy every registered site that has a wrangler deploy script
+# 2. deploy every registered site that has a Pages deployment (wrangler pages deploy dist)
 $sitesFile = "C:\Users\Administrator\coding\seo-blog-engine\data\sites.json"
 if (Test-Path $sitesFile) {
     $sites = Get-Content $sitesFile -Raw | ConvertFrom-Json
     foreach ($site in $sites) {
         $repo = $site.repo
-        $deployed = Join-Path $repo "wrangler.jsonc"
-        if (Test-Path $deployed) {
-            "[$(Get-Date -Format 'HH:mm:ss')] deploying $($site.key)" | Add-Content $log
+        $distDir = Join-Path $repo "dist"
+        if (Test-Path $distDir) {
+            "[$(Get-Date -Format 'HH:mm:ss')] building + deploying $($site.key)" | Add-Content $log
             try {
                 Push-Location $repo
-                npx wrangler deploy *>> $log
+                $packageJson = Join-Path $repo "package.json"
+                if (Test-Path $packageJson) {
+                    npm run build *>> $log   # rebuild so new articles are in dist
+                }
+                $pagesCfg = Join-Path $repo ".pages-project"
+                if (Test-Path $pagesCfg) {
+                    $projectName = (Get-Content $pagesCfg -Raw).Trim()
+                    npx wrangler pages deploy dist --project-name $projectName --branch main --commit-dirty=true *>> $log
+                } else {
+                    "[$(Get-Date -Format 'HH:mm:ss')] no .pages-project file, skipping deploy" | Add-Content $log
+                }
             } catch {
                 "[$(Get-Date -Format 'HH:mm:ss')] deploy failed: $_" | Add-Content $log
             } finally {
@@ -39,7 +49,7 @@ if (Test-Path $sitesFile) {
             }
         } else {
             # GitHub-push-driven sites (Cloudflare Pages git integration) need no local deploy
-            "[$(Get-Date -Format 'HH:mm:ss')] $($site.key): no wrangler config, relying on git push" | Add-Content $log
+            "[$(Get-Date -Format 'HH:mm:ss')] $($site.key): no dist, relying on git push" | Add-Content $log
         }
     }
 }
