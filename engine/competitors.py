@@ -3,7 +3,9 @@
 import json
 import re
 import xml.etree.ElementTree as ET
-from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from html import unescape
+from urllib.parse import urljoin, urlparse
 from datetime import datetime, timezone
 
 import requests
@@ -99,7 +101,9 @@ def get_sitemap_urls(domain):
     child_locs = [e.text for e in root.findall("sm:sitemap/sm:loc", ns)]
     if child_locs:
         blog_children = [c for c in child_locs if any(w in c.lower() for w in ("blog", "post", "article", "guide"))]
-        for child in (blog_children or child_locs)[:5]:
+        # If the index has no article sitemap, let the blog-page fallback probe
+        # common paths instead of treating every product/format page as a post.
+        for child in blog_children[:5]:
             try:
                 r = _get(child)
                 if r.status_code == 200:
@@ -125,6 +129,7 @@ def _extract_locs(xml_text, ns):
 
 
 BLOG_HINTS = ("blog", "guide", "tips", "how-to", "article", "post", "news", "resources", "help")
+HARVEST_VERSION = 6  # bump when crawl filters or request behavior changes
 
 NON_ARTICLE = ("about", "careers", "pricing", "contact", "login", "signup", "sign-up",
                "terms", "privacy", "legal", "press", "jobs", "team", "company",
@@ -144,14 +149,68 @@ def _is_non_article(url, title=""):
 def filter_article_urls(urls, base_domain):
     out = []
     for u in urls:
-        low = u.lower()
-        if urlparse(u).netloc.lower().removeprefix("www.") != base_domain:
+        parsed = urlparse(u)
+        path = parsed.path.lower()
+        host = parsed.netloc.lower().removeprefix("www.")
+        if host != base_domain.removeprefix("www."):
             continue
-        if any(h in low for h in BLOG_HINTS) and not low.endswith((".pdf", ".jpg", ".png", ".xml")):
+        blog_host_article = host.startswith("blog.") and bool(path.strip("/"))
+        article_path = any(h in path for h in BLOG_HINTS)
+        if (article_path or blog_host_article) and not path.endswith((".pdf", ".jpg", ".png", ".xml")):
             out.append(u)
-    if not out:  # fallback: everything not the homepage
-        out = [u for u in urls if u.rstrip("/") != f"https://{base_domain}" and u.rstrip("/") != f"https://www.{base_domain}"]
     return out[: config.MAX_SITEMAP_URLS]
+
+
+def _is_index_page(url, title=""):
+    path = urlparse(url).path.lower().strip("/")
+    if not path or path in ("blog", "resources", "guides", "articles", "news"):
+        return True
+    parts = path.split("/")
+    if any(part in {"category", "categories", "tag", "tags", "page", "author", "feed",
+                    "comments", "wp-json", "wp-content", "wp-admin", "wp-includes"}
+           for part in parts):
+        return True
+    if path.endswith((".php", ".xml", ".css", ".js", ".json", ".pdf", ".jpg", ".jpeg",
+                      ".png", ".gif", ".svg", ".webp", ".woff", ".woff2", ".ico")):
+        return True
+    cleaned = (title or "").lower().strip()
+    return cleaned in ("blog", "news", "resources", "articles")
+
+
+CONVERSION_RELEVANCE = re.compile(
+    r"\b(convert\w*|conversion|converter|format\w*|file[- ]type|file[- ]extension|extension|codec|container|compress\w*|archive|"
+    r"pdf|docx|pptx|xlsx|xls|csv|epub|mp3|mp4|wav|aac|flac|ogg|png|jpe?g|heic|heif|avif|webp|svg|zip|7z|dmg|3g2|3gp|lrf|lha|raw)\b",
+    re.I,
+)
+
+
+def _is_conversion_related(meta):
+    raw_title = meta.get("title", "").lower()
+    # CloudConvert's MCP integration is a directly relevant converter workflow,
+    # even when the article's metadata does not repeat the word "conversion".
+    if "cloudconvert" in raw_title and "mcp" in raw_title:
+        return True
+    text = " ".join([
+        _clean_source_title(meta.get("title", "")), meta.get("description", ""), meta.get("h1", ""),
+        " ".join(meta.get("h2s", [])),
+    ])
+    text = re.sub(r"\b(?:cloudconvert|freeconvert|zamzar|online[- ]convert|convert\.online)\b", " ", text, flags=re.I)
+    return bool(CONVERSION_RELEVANCE.search(text))
+
+
+def _clean_source_title(title):
+    """Remove recurring publisher suffixes before matching and topic clustering."""
+    title = unescape(title).replace("\ufffd", "|")
+    for pattern in (
+        r"\s*[|–—-]\s*online file conversion blog\b.*$",
+        r"\s*[|–—-]\s*cloudconvert blog\b.*$",
+        r"\s*[|–—-]\s*freeconvert blog\b.*$",
+        r"\s*[|–—-]\s*blog\b.*$",
+        r"\s*[|–—-]\s*convert\.online\b.*$",
+        r"\s*[|–—-]\s*zamzar\b.*$",
+    ):
+        title = re.sub(pattern, "", title, flags=re.I).strip()
+    return title
 
 
 def scrape_article_meta(url):
@@ -172,59 +231,95 @@ def scrape_article_meta(url):
     desc = first(r'<meta[^>]+name=["\']description["\'][^>]+content=["\'](.*?)["\']') or \
            first(r'<meta[^>]+content=["\'](.*?)["\'][^>]+name=["\']description["\']')
     h1 = first(r"<h1[^>]*>(.*?)</h1>")
-    h1 = re.sub(r"<[^>]+>", "", h1)
-    h2s = [re.sub(r"<[^>]+>", "", h) for h in re.findall(r"<h2[^>]*>(.*?)</h2>", html, re.I | re.S)][:8]
+    h1 = unescape(re.sub(r"<[^>]+>", "", h1))
+    h2s = [unescape(re.sub(r"<[^>]+>", "", h)) for h in re.findall(r"<h2[^>]*>(.*?)</h2>", html, re.I | re.S)][:8]
     return {
         "url": url,
-        "title": re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", title))[:160],
-        "description": desc[:300],
+        "title": re.sub(r"\s+", " ", _clean_source_title(re.sub(r"<[^>]+>", "", title)))[:160],
+        "description": unescape(desc)[:300],
         "h1": h1[:160],
         "h2s": [re.sub(r"\s+", " ", h).strip()[:120] for h in h2s if h.strip()],
         "scraped": now_iso(),
     }
 
 
+def _scrape_relevant_articles(urls):
+    """Fetch a bounded set of candidate pages concurrently and keep relevant posts."""
+    unique = list(dict.fromkeys(urls))[: config.MAX_ARTICLES_PER_SCRAPE]
+    if not unique:
+        return []
+    found = []
+    workers = min(config.CRAWL_ARTICLE_WORKERS, len(unique))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(scrape_article_meta, url): url for url in unique}
+        for future in as_completed(futures):
+            try:
+                meta = future.result()
+            except Exception:
+                continue
+            url = futures[future]
+            if (meta and meta["title"] and not _is_non_article(url, meta["title"])
+                    and not _is_index_page(url, meta["title"])
+                    and _is_conversion_related(meta)):
+                found.append(meta)
+    return found
+
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def harvest_competitor(site_key, domain):
-    """Full harvest for one competitor: sitemap -> article URLs -> meta. Cached per day."""
+def harvest_competitor(site_key, domain, sample_url=None):
+    """Harvest relevant articles from a sitemap or the configured blog page."""
     cache = config.RESEARCH / site_key
     cache.mkdir(parents=True, exist_ok=True)
     cache_file = cache / f"{domain}.json"
     if cache_file.exists():
         data = json.loads(cache_file.read_text(encoding="utf-8"))
-        if data.get("date") == datetime.now(timezone.utc).strftime("%Y-%m-%d"):
+        if (data.get("date") == datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                and data.get("harvest_version") == HARVEST_VERSION):
             return data
     sitemap_urls = [u for u in filter_article_urls(get_sitemap_urls(domain), domain)
                     if not _is_non_article(u)]
-    arts = []
-    for u in sitemap_urls[: config.MAX_ARTICLES_PER_SCRAPE]:
-        meta = scrape_article_meta(u)
-        if meta and meta["title"] and not _is_non_article(u, meta["title"]):
-            arts.append(meta)
-    # sitemap-less fallback: probe common blog paths
+    arts = _scrape_relevant_articles(sitemap_urls)
+    # Sitemap-less fallback: use the configured blog landing page, then common paths.
     if not arts:
-        for p in ("/blog", "/blog/", "/resources", "/guides", "/articles"):
+        probes = [sample_url] if sample_url else []
+        probes.extend(f"https://{domain}{p}" for p in ("/", "/blog/"))
+        seen_probes = set()
+        for page_url in probes:
+            if not page_url or page_url in seen_probes:
+                continue
+            seen_probes.add(page_url)
             try:
-                r = _get(f"https://{domain}{p}")
+                r = _get(page_url)
                 if r.status_code == 200:
-                    links = re.findall(r'href="(/[^"#?]+)"', r.text)
+                    links = re.findall(r"href=[\"']([^\"'#?]+)", r.text, re.I)
+                    candidates = []
                     seen = set()
-                    for l in links:
-                        if any(h in l.lower() for h in BLOG_HINTS) and l not in seen:
-                            seen.add(l)
-                            meta = scrape_article_meta(f"https://{domain}{l}")
-                            if meta and meta["title"]:
-                                arts.append(meta)
-                            if len(arts) >= config.MAX_ARTICLES_PER_SCRAPE:
-                                break
+                    for href in links:
+                        article_url = urljoin(page_url, unescape(href))
+                        parsed = urlparse(article_url)
+                        host = parsed.netloc.lower().removeprefix("www.")
+                        if host != domain.lower().removeprefix("www."):
+                            continue
+                        path = parsed.path.lower()
+                        blog_host = host.startswith("blog.")
+                        if not (blog_host or any(h in path for h in BLOG_HINTS)):
+                            continue
+                        if article_url in seen or _is_index_page(article_url):
+                            continue
+                        seen.add(article_url)
+                        candidates.append(article_url)
+                        if len(candidates) >= config.MAX_ARTICLES_PER_SCRAPE:
+                            break
+                    arts = _scrape_relevant_articles(candidates)
                     if arts:
                         break
             except Exception:
                 continue
     data = {"domain": domain, "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "harvest_version": HARVEST_VERSION,
             "articles": arts}
     cache_file.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return data

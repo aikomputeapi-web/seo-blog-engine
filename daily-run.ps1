@@ -1,12 +1,26 @@
 # Daily autonomous SEO blog run: research competitors + write + publish articles for every registered site.
-# Created by jcode 2026-10-08. Runs at most once per day (state file guard);
-# started at sign-in via Startup folder + re-checked hourly while jcode runs.
+# Started by the daily Task Scheduler trigger and the Startup-folder catch-up launcher.
+# The state file and exclusive lock prevent duplicate runs on the same day.
 
 $logDir = "C:\Users\Administrator\coding\seo-blog-engine\logs"
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
 $stamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")   # UTC date: engine state is UTC-agnostic
 $log = Join-Path $logDir "scheduled-$stamp.log"
 $stateFile = "C:\Users\Administrator\coding\seo-blog-engine\data\state\last-scheduled-run.txt"
+$lockFile = "C:\Users\Administrator\coding\seo-blog-engine\data\state\daily-run.lock"
+
+# The Startup launcher and scheduled trigger may fire together. An open file handle
+# is the lock; Windows releases it automatically if PowerShell exits unexpectedly.
+try {
+    $runLock = [System.IO.File]::Open(
+        $lockFile,
+        [System.IO.FileMode]::OpenOrCreate,
+        [System.IO.FileAccess]::ReadWrite,
+        [System.IO.FileShare]::None
+    )
+} catch {
+    exit 0
+}
 
 # once-per-day guard: skip if already ran today
 if (Test-Path $stateFile) {
@@ -56,3 +70,4 @@ if (Test-Path $sitesFile) {
 
 "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] scheduled run finishing" | Add-Content $log
 Set-Content -Path $stateFile -Value $stamp -NoNewline
+$runLock.Dispose()

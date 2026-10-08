@@ -49,9 +49,10 @@ def cmd_research(args):
         results = {}
         for c in site.get("competitors", []):
             dom = c["domain"] if isinstance(c, dict) else c
+            sample_url = c.get("sample_url") if isinstance(c, dict) else None
             log(f"{key}: harvesting {dom} ...")
             try:
-                data = competitors.harvest_competitor(key, dom)
+                data = competitors.harvest_competitor(key, dom, sample_url=sample_url)
                 results[dom] = len(data.get("articles", []))
                 log(f"{key}: {dom} -> {results[dom]} articles")
             except Exception as e:

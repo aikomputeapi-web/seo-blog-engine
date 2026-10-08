@@ -107,5 +107,56 @@
       "transparent png",
       "remove bg free"
     ]
+  },
+  {
+    "key": "kaleido",
+    "created": "2026-10-08T08:58:40+00:00",
+    "competitors": [
+      {
+        "domain": "cloudconvert.com",
+        "sample_url": "https://cloudconvert.com/blog/"
+      },
+      {
+        "domain": "freeconvert.com",
+        "sample_url": "https://www.freeconvert.com/blog/"
+      },
+      {
+        "domain": "blog.online-convert.com",
+        "sample_url": "https://blog.online-convert.com/"
+      },
+      {
+        "domain": "blog.zamzar.com",
+        "sample_url": "https://blog.zamzar.com/"
+      },
+      {
+        "domain": "convert.online",
+        "sample_url": "https://convert.online/blog"
+      }
+    ],
+    "articles": {
+      "file-conversion-guide": {
+        "title": "File Conversion: Formats, Steps, and Best Practices",
+        "source": {
+          "topic": "file conversion",
+          "domains": [
+            "blog.online-convert.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-08T09:28:12+00:00"
+      }
+    },
+    "name": "Kaleido",
+    "tool_url": "https://aikomputeapi-web.github.io/convert/",
+    "repo": "C:\\Users\\Administrator\\coding\\convert-to-it-pilot-wt",
+    "output_dir": "src/content/blog",
+    "description": "A universal in-browser file converter that runs supported conversions locally on the user’s device without uploading selected files.",
+    "keywords": [
+      "universal file converter",
+      "free file converter",
+      "convert files online",
+      "convert files in browser",
+      "file format converter"
+    ]
   }
 ]

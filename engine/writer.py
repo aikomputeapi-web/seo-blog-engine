@@ -32,6 +32,9 @@ Write the article in GitHub-flavored Markdown with YAML frontmatter. Requirement
 - one H2 "How to {tool_verb} step by step" with a numbered step list that references using {tool_url}
 - one H2 FAQ with 4-5 questions as H3s (questions real users search for)
 - mention the tool naturally 3-6 times with a link to {tool_url}
+- Treat the registered tool description and keywords as the complete list of confirmed capabilities.
+  Do not claim a specific format pair or operation is supported unless that information is listed;
+  tell readers to check the options shown in the tool for the exact formats it supports.
 - no invented statistics, no fake quotes, no fabricated dates
 
 Output ONLY the markdown file content starting with --- (frontmatter) and nothing else."""
@@ -57,7 +60,10 @@ def build_prompt(site, topic_row):
 def _tool_verb(site):
     kw = site.get("keywords") or []
     if kw:
-        return kw[0]
+        first = kw[0].strip()
+        if re.match(r"^(remove|convert|compress|resize|crop|merge|split|create|generate|edit|rotate|compress|extract|watermark)\b", first, re.I):
+            return first
+        return f"use the {site['name']} tool"
     return f"use the {site['name']} tool"
 
 
@@ -151,4 +157,3 @@ def write_article(site, topic_row):
     fm_str = yaml.safe_dump(final_fm, sort_keys=False, allow_unicode=True)
     md = f"---\n{fm_str}---\n\n{body}\n"
     return slug, title, md
-
