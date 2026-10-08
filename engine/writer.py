@@ -24,8 +24,8 @@ information needs they target, exceed them on completeness, do NOT copy):
 {research}
 
 Write the article in GitHub-flavored Markdown with YAML frontmatter. Requirements:
-- frontmatter keys: title (<=60 chars, keyword-first), description (<=155 chars meta description),
-  slug (lowercase-kebab), pubDate (YYYY-MM-DD), tags (3-5), keywords (3-5)
+- frontmatter keys as a YAML block: title (<=60 chars, keyword-first), description (<=155 chars meta description),
+  slug (lowercase-kebab), pubDate (YYYY-MM-DD), tags: [tag1, tag2, tag3] (3-5 items, inline array), keywords: [kw1, kw2, kw3] (3-5 items, inline array)
 - 1200-1800 words, natural human tone, no fluff, never mention competitors by name
 - H1 equals the title; then 5-8 H2 sections covering the search intent (what/how/steps/tips/
   mistakes/comparison/FAQ)
@@ -127,9 +127,16 @@ def write_article(site, topic_row):
     tags = fm.get("tags", [])
     if isinstance(tags, str):
         tags = [t.strip() for t in tags.split(",") if t.strip()]
+    if not tags:
+        # fallback: derive from topic + site keywords
+        tags = [w for w in topic_row["topic"].split() if w not in ("and", "or", "the")][:4]
     keywords = fm.get("keywords", [])
     if isinstance(keywords, str):
         keywords = [t.strip() for t in keywords.split(",") if t.strip()]
+    if not keywords:
+        keywords = (site.get("keywords") or [])[:4]
+    if not keywords:
+        keywords = tags[:3]
     final_fm = {
         "title": title,
         "description": fm.get("description", ""),
