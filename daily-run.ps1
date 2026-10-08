@@ -4,7 +4,7 @@
 
 $logDir = "C:\Users\Administrator\coding\seo-blog-engine\logs"
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
-$stamp = Get-Date -Format "yyyy-MM-dd"
+$stamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")   # UTC date: engine state is UTC-agnostic
 $log = Join-Path $logDir "scheduled-$stamp.log"
 $stateFile = "C:\Users\Administrator\coding\seo-blog-engine\data\state\last-scheduled-run.txt"
 
