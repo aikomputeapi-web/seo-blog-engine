@@ -11,6 +11,10 @@ from datetime import datetime, timezone
 import requests
 
 from engine import config
+try:
+    from engine import registry as registry_mod
+except Exception:
+    registry_mod = None
 
 
 def _get(url):
@@ -147,12 +151,13 @@ def _is_non_article(url, title=""):
 
 
 def filter_article_urls(urls, base_domain):
+    base_host = urlparse((base_domain if "://" in base_domain else "https://" + base_domain)).netloc.lower().removeprefix("www.")
     out = []
     for u in urls:
         parsed = urlparse(u)
         path = parsed.path.lower()
         host = parsed.netloc.lower().removeprefix("www.")
-        if host != base_domain.removeprefix("www."):
+        if host != base_host:
             continue
         blog_host_article = host.startswith("blog.") and bool(path.strip("/"))
         article_path = any(h in path for h in BLOG_HINTS)
@@ -243,7 +248,20 @@ def scrape_article_meta(url):
     }
 
 
-def _scrape_relevant_articles(urls):
+def _relevance_keywords(site_key):
+    """Per-site topic keywords used to judge competitor-article relevance."""
+    site = registry_mod.get_site(site_key) if registry_mod else None
+    if not site:
+        return None
+    kws = [k.strip().lower() for k in site.get("keywords", []) if k.strip()]
+    if not kws:
+        return None
+    # split multiword keywords into words too, match any word len>=4
+    words = sorted({w for k in kws for w in re.findall(r"[a-zA-Z]{4,}", k)})
+    return words or None
+
+
+def _scrape_relevant_articles(urls, relevance_regex=None):
     """Fetch a bounded set of candidate pages concurrently and keep relevant posts."""
     unique = list(dict.fromkeys(urls))[: config.MAX_ARTICLES_PER_SCRAPE]
     if not unique:
@@ -258,10 +276,21 @@ def _scrape_relevant_articles(urls):
             except Exception:
                 continue
             url = futures[future]
-            if (meta and meta["title"] and not _is_non_article(url, meta["title"])
-                    and not _is_index_page(url, meta["title"])
-                    and _is_conversion_related(meta)):
-                found.append(meta)
+            if not (meta and meta["title"]):
+                continue
+            if _is_non_article(url, meta["title"]) or _is_index_page(url, meta["title"]):
+                continue
+            if relevance_regex is not None:
+                text = " ".join([
+                    _clean_source_title(meta.get("title", "")), meta.get("description", ""), meta.get("h1", ""),
+                    " ".join(meta.get("h2s", [])),
+                ])
+                if not relevance_regex.search(text):
+                    continue
+            else:
+                if not _is_conversion_related(meta):
+                    continue
+            found.append(meta)
     return found
 
 
@@ -273,7 +302,10 @@ def harvest_competitor(site_key, domain, sample_url=None):
     """Harvest relevant articles from a sitemap or the configured blog page."""
     cache = config.RESEARCH / site_key
     cache.mkdir(parents=True, exist_ok=True)
-    cache_file = cache / f"{domain}.json"
+    safe_name = domain.replace("/", "_").replace("\\", "_")
+    cache_file = cache / f"{safe_name}.json"
+    rel_words = _relevance_keywords(site_key)
+    relevance_regex = re.compile("|".join(rel_words), re.I) if rel_words else None
     if cache_file.exists():
         data = json.loads(cache_file.read_text(encoding="utf-8"))
         if (data.get("date") == datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -281,7 +313,7 @@ def harvest_competitor(site_key, domain, sample_url=None):
             return data
     sitemap_urls = [u for u in filter_article_urls(get_sitemap_urls(domain), domain)
                     if not _is_non_article(u)]
-    arts = _scrape_relevant_articles(sitemap_urls)
+    arts = _scrape_relevant_articles(sitemap_urls, relevance_regex)
     # Sitemap-less fallback: use the configured blog landing page, then common paths.
     if not arts:
         probes = [sample_url] if sample_url else []
@@ -313,7 +345,7 @@ def harvest_competitor(site_key, domain, sample_url=None):
                         candidates.append(article_url)
                         if len(candidates) >= config.MAX_ARTICLES_PER_SCRAPE:
                             break
-                    arts = _scrape_relevant_articles(candidates)
+                    arts = _scrape_relevant_articles(candidates, relevance_regex)
                     if arts:
                         break
             except Exception:

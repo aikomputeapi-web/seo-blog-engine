@@ -94,6 +94,17 @@
           "coverage": 1
         },
         "published": "2026-10-08T05:34:39+00:00"
+      },
+      "jpeg-vs-png-choosing-right-image-format": {
+        "title": "JPEG vs PNG: Which Image Format Should You Choose?",
+        "source": {
+          "topic": "jpeg png choosing right image format",
+          "domains": [
+            "www.img2go.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-09T00:26:51+00:00"
       }
     },
     "name": "FreeBG",
@@ -144,19 +155,199 @@
           "coverage": 1
         },
         "published": "2026-10-08T09:28:12+00:00"
+      },
+      "iphone-raw-proraw-heif-format-choice": {
+        "title": "iPhone RAW vs ProRAW vs HEIF: Which Format Is Best?",
+        "source": {
+          "topic": "iphone raw proraw heif format choice",
+          "domains": [
+            "blog.online-convert.com"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-09T00:29:06+00:00"
+      },
+      "universal-file-converter-renaming-is-not-conversion": {
+        "title": "Universal File Converter: Why Renaming Isn't Enough",
+        "source": {
+          "topic": "renaming file extension doesn convert",
+          "domains": [
+            "convert.online"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-09T00:29:59+00:00"
+      },
+      "universal-file-converter-files-wont-convert": {
+        "title": "Universal File Converter: Why Some Files Won\u2019t Convert",
+        "source": {
+          "topic": "some files never going convert",
+          "domains": [
+            "convert.online"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-10T02:39:59+00:00"
+      },
+      "automate-file-conversion-api-mcp-server": {
+        "title": "Automate File Conversion: API vs MCP Server",
+        "source": {
+          "topic": "automate file conversion api mcp server",
+          "domains": [
+            "convert.online"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-10T02:41:58+00:00"
       }
     },
     "name": "Kaleido",
     "tool_url": "https://aikomputeapi-web.github.io/convert/",
     "repo": "C:\\Users\\Administrator\\coding\\convert-to-it-pilot-wt",
     "output_dir": "src/content/blog",
-    "description": "A universal in-browser file converter that runs supported conversions locally on the user’s device without uploading selected files.",
+    "description": "A universal in-browser file converter that runs supported conversions locally on the user\u2019s device without uploading selected files.",
     "keywords": [
       "universal file converter",
       "free file converter",
       "convert files online",
       "convert files in browser",
       "file format converter"
+    ]
+  },
+  {
+    "key": "whisperdeck",
+    "created": "2026-10-16T11:32:15+00:00",
+    "competitors": [
+      "blog.rev.com",
+      "descript.com/blog",
+      "riverside.fm/blog",
+      "transkriptor.com/blog",
+      "otter.ai/blog",
+      "www.happyscribe.com/blog"
+    ],
+    "articles": {
+      "audacity-alternative-better-options": {
+        "title": "Audacity Alternative: Better Options for Audio Editing",
+        "source": {
+          "topic": "audacity alternative better options audio editing",
+          "domains": [
+            "descript.com/blog"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-16T11:59:20+00:00"
+      }
+    },
+    "name": "WhisperDeck",
+    "tool_url": "https://whisperdeck.pages.dev",
+    "repo": "C:\\Users\\Administrator\\coding\\whisperdeck-site",
+    "output_dir": "src/content/blog",
+    "description": "Free in-browser AI transcription: audio and video to text with OpenAI Whisper running on-device via WebAssembly. Private, no uploads, timestamps, TXT and SRT export.",
+    "keywords": [
+      "transcribe audio to text",
+      "audio to text",
+      "transcription",
+      "whisper transcription",
+      "free transcription",
+      "speech to text"
+    ]
+  },
+  {
+    "key": "pixellift",
+    "created": "2026-10-16T11:32:16+00:00",
+    "competitors": [
+      "letsenhance.io/blog",
+      "icons8.com/blog",
+      "www.profilebakery.com/blog",
+      "vanceai.com/blog",
+      "www.imglarger.com/blog",
+      "photo.pico.ai/blog"
+    ],
+    "articles": {
+      "ai-image-upscaler-upscale-images-improve-quality": {
+        "title": "AI Image Upscaler: Upscale Images and Improve Quality",
+        "source": {
+          "topic": "upscale images while improving quality letsenhance",
+          "domains": [
+            "letsenhance.io/blog"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-16T12:04:02+00:00"
+      },
+      "one-image-becomes-five-videos-practical": {
+        "title": "Upscale One Image, Ship Five Videos: A Practical Workflow",
+        "source": {
+          "topic": "one image becomes five videos practical",
+          "domains": [
+            "www.imglarger.com/blog"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-16T12:06:20+00:00"
+      }
+    },
+    "name": "PixelLift",
+    "tool_url": "https://pixelliftai.pages.dev",
+    "repo": "C:\\Users\\Administrator\\coding\\pixellift-site",
+    "output_dir": "src/content/blog",
+    "description": "Free in-browser AI image upscaler: ESRGAN super-resolution up to 4x running on-device via TensorFlow.js. Private, no uploads, no watermark.",
+    "keywords": [
+      "ai image upscaler",
+      "upscale image",
+      "enhance photo",
+      "image enlarger",
+      "super resolution",
+      "upscale photo free"
+    ]
+  },
+  {
+    "key": "promptspark",
+    "created": "2026-10-16T11:32:16+00:00",
+    "competitors": [
+      "promptomania.com",
+      "promptbase.com",
+      "prompthero.com",
+      "flowgpt.com",
+      "promptperfect.jina.ai",
+      "godofprompt.ai"
+    ],
+    "articles": {
+      "gemini-photo-prompts-that-actually-work": {
+        "title": "Gemini Photo Prompts That Actually Work",
+        "source": {
+          "topic": "gemini photo prompts actually work",
+          "domains": [
+            "godofprompt.ai"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-16T11:46:05+00:00"
+      },
+      "ai-prompt-portfolio-images-everywhere": {
+        "title": "AI Prompt Portfolio: Put Your Images Everywhere",
+        "source": {
+          "topic": "prompt portfolio images everywhere",
+          "domains": [
+            "godofprompt.ai"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-16T11:50:45+00:00"
+      }
+    },
+    "name": "PromptSpark",
+    "tool_url": "https://promptspark-blog.pages.dev",
+    "repo": "C:\\Users\\Administrator\\coding\\promptspark-site",
+    "output_dir": "src/content/blog",
+    "description": "Free AI image prompt builder for Midjourney, DALL-E and Stable Diffusion: visual composer for styles, lighting, cameras and parameters.",
+    "keywords": [
+      "midjourney prompt generator",
+      "ai prompt generator",
+      "prompt builder",
+      "midjourney prompts",
+      "dalle prompts",
+      "stable diffusion prompts"
     ]
   }
 ]

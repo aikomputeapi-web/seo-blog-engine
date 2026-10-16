@@ -215,6 +215,19 @@ def build_topic_report(site):
     }
 
 
+def _is_site_topic(topic, site):
+    """Generic relevance gate: topic overlaps site keywords or passes converter intent."""
+    if _is_conversion_topic(topic):
+        return True
+    low = topic.lower()
+    for kw in site.get("keywords", []):
+        for w in re.findall(r"[a-zA-Z]{4,}", kw.lower()):
+            pattern = r"\b" + re.escape(w) + r"\b"
+            if re.search(pattern, low):
+                return True
+    return False
+
+
 def select_next_topics(site, report, max_n=None):
     """Pick topics to write next:
     1. evergreen: majority-covered topics not yet published on our site
@@ -236,7 +249,7 @@ def select_next_topics(site, report, max_n=None):
     evergreen = [c for c in candidates if not c["already_covered"] and c["coverage"] >= 2]
     evergreen.sort(key=lambda x: (-x["coverage"], x["topic"]))
     fresh = [c for c in candidates if not c["already_covered"] and c["coverage"] == 1
-             and _is_conversion_topic(c["topic"]) and _fresh_score(c) > 0]
+             and _is_site_topic(c["topic"], site) and _fresh_score(c) > 0]
     # Screen all single-coverage opportunities in one request to keep daily runs short.
     fresh = _screen_fresh_batch(fresh, site)
     fresh.sort(key=lambda x: -_fresh_score(x))
