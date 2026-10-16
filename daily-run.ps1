@@ -68,6 +68,14 @@ if (Test-Path $sitesFile) {
     }
 }
 
+# 3. daily tool-idea scout (writes ideas\ideas.json + out\YYYY-MM-DD.md for human review)
+try {
+    "[$(Get-Date -Format 'HH:mm:ss')] running tool scout" | Add-Content $log
+    python "C:\Users\Administrator\coding\tool-scout\scout.py" *>> $log
+} catch {
+    "[$(Get-Date -Format 'HH:mm:ss')] scout failed: $_" | Add-Content $log
+}
+
 "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] scheduled run finishing" | Add-Content $log
 Set-Content -Path $stateFile -Value $stamp -NoNewline
 $runLock.Dispose()
