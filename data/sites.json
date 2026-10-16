@@ -179,7 +179,7 @@
         "published": "2026-10-09T00:29:59+00:00"
       },
       "universal-file-converter-files-wont-convert": {
-        "title": "Universal File Converter: Why Some Files Won\u2019t Convert",
+        "title": "Universal File Converter: Why Some Files Won’t Convert",
         "source": {
           "topic": "some files never going convert",
           "domains": [
@@ -205,7 +205,7 @@
     "tool_url": "https://aikomputeapi-web.github.io/convert/",
     "repo": "C:\\Users\\Administrator\\coding\\convert-to-it-pilot-wt",
     "output_dir": "src/content/blog",
-    "description": "A universal in-browser file converter that runs supported conversions locally on the user\u2019s device without uploading selected files.",
+    "description": "A universal in-browser file converter that runs supported conversions locally on the user’s device without uploading selected files.",
     "keywords": [
       "universal file converter",
       "free file converter",
@@ -348,6 +348,44 @@
       "midjourney prompts",
       "dalle prompts",
       "stable diffusion prompts"
+    ]
+  },
+  {
+    "key": "noupload",
+    "created": "2026-10-16T12:19:14+00:00",
+    "competitors": [
+      "theresanaiforthat.com",
+      "toolify.ai",
+      "futurepedia.io",
+      "theresanaaiforthat.com",
+      "aitools.fyi",
+      "topai.tools"
+    ],
+    "articles": {
+      "chat-pdf-productivity-oct": {
+        "title": "Chat PDF Productivity Tools: Oct 2026 Picks",
+        "source": {
+          "topic": "chat pdf productivity oct",
+          "domains": [
+            "aitools.fyi"
+          ],
+          "coverage": 1
+        },
+        "published": "2026-10-16T12:24:21+00:00"
+      }
+    },
+    "name": "NoUpload AI",
+    "tool_url": "https://nouploadai.pages.dev",
+    "repo": "C:\\Users\\Administrator\\coding\\noupload-ai",
+    "output_dir": "src/content/blog",
+    "description": "Curated directory of AI and file tools that run entirely in your browser: no uploads, no signup, files processed locally via WebAssembly and WebGPU.",
+    "keywords": [
+      "browser ai tools",
+      "no upload ai",
+      "private ai tools",
+      "on-device ai",
+      "in-browser tools",
+      "no signup tools"
     ]
   }
 ]
